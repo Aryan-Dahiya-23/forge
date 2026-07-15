@@ -1,0 +1,31 @@
+// DocForge — Prisma schema (Supabase Postgres)
+// Spec: docforge-project-spec.md §4.5
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Document {
+  id        String    @id @default(cuid())
+  title     String
+  content   Json
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  versions  Version[]
+}
+
+model Version {
+  id         String   @id @default(cuid())
+  documentId String
+  content    Json
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
