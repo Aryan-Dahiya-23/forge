@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 type DocumentSidebarProps = {
@@ -95,23 +96,41 @@ export function DocumentSidebar({ documents }: DocumentSidebarProps) {
           >
             DocForge
           </Link>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            onClick={toggleTheme}
-            aria-label="Toggle theme"
-            title="Toggle theme"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {!mounted ? (
+          {!mounted ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground/50"
+              disabled
+            >
               <span className="size-4" />
-            ) : resolvedTheme === "dark" ? (
-              <Sun className="size-4" strokeWidth={1.75} />
-            ) : (
-              <Moon className="size-4" strokeWidth={1.75} />
-            )}
-          </Button>
+            </Button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  />
+                }
+              >
+                {resolvedTheme === "dark" ? (
+                  <Sun className="size-4" strokeWidth={1.75} />
+                ) : (
+                  <Moon className="size-4" strokeWidth={1.75} />
+                )}
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={4}>
+                <p className="text-xs">Toggle theme</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         <div className="px-2 py-2 border-b border-border/10">
