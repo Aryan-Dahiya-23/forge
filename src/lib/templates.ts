@@ -5,7 +5,8 @@ export type TemplateId =
   | "blank"
   | "onboarding-checklist"
   | "troubleshooting-guide"
-  | "feature-release-notes";
+  | "feature-release-notes"
+  | "incident-post-mortem";
 
 export type DocumentTemplate = {
   id: TemplateId;
@@ -54,8 +55,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "tip" },
           content: [
             {
-              type: "text",
-              text: "Assign a buddy before day one so none of these steps block on waiting for access.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Assign a buddy before day one so none of these steps block on waiting for access.",
+                },
+              ],
             },
           ],
         },
@@ -131,8 +137,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "warning" },
           content: [
             {
-              type: "text",
-              text: "Never commit secrets or .env files. Rotate anything that was shared over chat.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Never commit secrets or .env files. Rotate anything that was shared over chat.",
+                },
+              ],
             },
           ],
         },
@@ -162,8 +173,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "warning" },
           content: [
             {
-              type: "text",
-              text: "Do not restart production services without checking the on-call runbook and notifying the channel.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Do not restart production services without checking the on-call runbook and notifying the channel.",
+                },
+              ],
             },
           ],
         },
@@ -251,8 +267,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "note" },
           content: [
             {
-              type: "text",
-              text: "If the issue is unresolved after these steps, escalate to the owning team with the evidence collected above.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "If the issue is unresolved after these steps, escalate to the owning team with the evidence collected above.",
+                },
+              ],
             },
           ],
         },
@@ -282,8 +303,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "tip" },
           content: [
             {
-              type: "text",
-              text: "Link the PR, design doc, and demo recording at the top so reviewers do not hunt for context.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Link the PR, design doc, and demo recording at the top so reviewers do not hunt for context.",
+                },
+              ],
             },
           ],
         },
@@ -356,8 +382,13 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "warning" },
           content: [
             {
-              type: "text",
-              text: "Known issue: document any partial rollout limits, migrations, or temporary workarounds here.",
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Known issue: document any partial rollout limits, migrations, or temporary workarounds here.",
+                },
+              ],
             },
           ],
         },
@@ -366,8 +397,135 @@ export const TEMPLATES: DocumentTemplate[] = [
           attrs: { variant: "note" },
           content: [
             {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Rollback: disable the flag and redeploy the previous artifact if metrics breach SLO.",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    id: "incident-post-mortem",
+    name: "Incident Post-Mortem (PIR)",
+    description: "Document outages, root cause analysis, and resolution timelines.",
+    defaultTitle: "Incident Post-Mortem: [Service Name] Outage",
+    highlights: ["Outage", "Steps", "Timeline"],
+    content: {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [
+            {
               type: "text",
-              text: "Rollback: disable the flag and redeploy the previous artifact if metrics breach SLO.",
+              text: "Document the details, root cause, and timeline of the incident to prevent future recurrences.",
+            },
+          ],
+        },
+        {
+          type: "callout",
+          attrs: { variant: "warning" },
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Severity: SEV-1 · Duration: 42 minutes · Impact: 12% increase in API latency for EMEA region.",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: "Executive Summary" }],
+        },
+        {
+          type: "paragraph",
+          content: [
+            {
+              type: "text",
+              text: "Summarize what happened, how it was detected, and what the immediate fix was. Keep it high-level for cross-functional stakeholders.",
+            },
+          ],
+        },
+        {
+          type: "heading",
+          attrs: { level: 2 },
+          content: [{ type: "text", text: "Timeline of events" }],
+        },
+        {
+          type: "step",
+          attrs: { number: 1, title: "Initial alert triggered" },
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Automated Prometheus alerts fired for high HTTP 500 error rates on the gateway service. On-call engineer was paged.",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "step",
+          attrs: { number: 2, title: "Triage & investigation" },
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Identified a memory leak introduced in the most recent deployment (SHA: 4fa9b2). Traffic began spilling over into swap space.",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "screenshot",
+          attrs: {
+            src: null,
+            caption: "Prometheus chart: steep spike in memory consumption and drop in availability",
+          },
+        },
+        {
+          type: "step",
+          attrs: { number: 3, title: "Mitigation (Rollback)" },
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Initiated an emergency rollback to version v1.42.1. Traffic stabilized and error rates returned to baseline.",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "callout",
+          attrs: { variant: "tip" },
+          content: [
+            {
+              type: "paragraph",
+              content: [
+                {
+                  type: "text",
+                  text: "Action Item: Add memory leak validation to the CI/CD pipeline staging phase before any prod deployment.",
+                },
+              ],
             },
           ],
         },
