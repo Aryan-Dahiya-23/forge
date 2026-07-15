@@ -88,9 +88,7 @@ export function useAutosave(params: {
       const message = err instanceof Error ? err.message : "Couldn't save changes.";
       setError(message);
       setStatus("error");
-      toast.error("Couldn't save changes.", {
-        action: { label: "Retry", onClick: saveNow },
-      });
+      toast.error("Couldn't save changes.");
     }
   }, [enabled]);
 

@@ -173,9 +173,7 @@ export function AiAssistant({ editor }: AiAssistantProps) {
             ? { ...prev, phase: "error", error: message }
             : prev,
         );
-        toast.error("AI is currently unavailable.", {
-          action: { label: "Retry", onClick: () => { void startAction(action); } },
-        });
+        toast.error("AI is currently unavailable.");
       } finally {
         if (abortRef.current === controller) {
           abortRef.current = null;

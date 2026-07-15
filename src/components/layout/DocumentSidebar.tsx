@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState, useLayoutEffect } from "react";
 import { toast } from "sonner";
-import { FileText, Loader2, Plus, Trash2, Sun, Moon } from "lucide-react";
+import { FileText, Plus, Trash2, Sun, Moon } from "lucide-react";
 import { useTheme } from "next-themes";
 import type { DocumentListItem } from "@/lib/documents";
 import {
@@ -35,7 +35,6 @@ export function DocumentSidebar({ documents }: DocumentSidebarProps) {
   const activeId =
     typeof params?.id === "string" ? params.id : undefined;
 
-  const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DocumentListItem | null>(
     null,
   );
@@ -44,31 +43,14 @@ export function DocumentSidebar({ documents }: DocumentSidebarProps) {
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   }, [resolvedTheme, setTheme]);
-
-  const createBlank = useCallback(async () => {
-    if (creating) return;
-    setCreating(true);
-    try {
-      const response = await fetch("/api/documents", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: "blank" }),
-      });
-      if (!response.ok) throw new Error("Failed to create");
-      const data = (await response.json()) as { document: { id: string } };
-      router.push(`/documents/${data.document.id}`);
-      router.refresh();
-    } catch {
-      setCreating(false);
-    }
-  }, [creating, router]);
 
   const confirmDelete = useCallback(async () => {
     if (!deleteTarget) return;

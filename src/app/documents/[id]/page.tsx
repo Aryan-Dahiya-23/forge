@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Editor } from "@/components/editor/Editor";
 import { toDocumentDTO } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,9 @@ type PageProps = {
 
 export default async function DocumentPage({ params }: PageProps) {
   const { id } = await params;
+  const workspaceId = await getWorkspaceId();
 
-  const row = await prisma.document.findUnique({ where: { id } });
+  const row = await prisma.document.findUnique({ where: { id, workspaceId } });
   if (!row) {
     notFound();
   }

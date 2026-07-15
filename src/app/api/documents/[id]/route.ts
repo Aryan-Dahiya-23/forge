@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { isJsonContent, toDocumentDTO } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,10 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    const document = await prisma.document.findUnique({ where: { id } });
+    const workspaceId = await getWorkspaceId();
+    const document = await prisma.document.findUnique({
+      where: { id, workspaceId },
+    });
     if (!document) {
       return Response.json({ error: "Document not found." }, { status: 404 });
     }
@@ -71,8 +75,9 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 
   try {
+    const workspaceId = await getWorkspaceId();
     const document = await prisma.document.update({
-      where: { id },
+      where: { id, workspaceId },
       data,
     });
     return Response.json({ document: toDocumentDTO(document) });
@@ -96,7 +101,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
   const { id } = await context.params;
 
   try {
-    await prisma.document.delete({ where: { id } });
+    const workspaceId = await getWorkspaceId();
+    await prisma.document.delete({ where: { id, workspaceId } });
     return new Response(null, { status: 204 });
   } catch (error) {
     if (

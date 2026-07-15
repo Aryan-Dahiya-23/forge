@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { toListItem } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
+import { getWorkspaceId, initializeWorkspace } from "@/lib/workspace";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,11 @@ export default async function DocumentsLayout({
   let documents: ReturnType<typeof toListItem>[] = [];
 
   try {
+    const workspaceId = await getWorkspaceId();
+    await initializeWorkspace(workspaceId);
+
     const rows = await prisma.document.findMany({
+      where: { workspaceId },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,

@@ -35,7 +35,7 @@ export function createEditorExtensions() {
             if ($pos.depth > 0 && $pos.parent.type.name === "callout") {
               return "Write a callout…";
             }
-          } catch (e) {
+          } catch {
             // ignore
           }
         }
