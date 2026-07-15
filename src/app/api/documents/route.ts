@@ -7,13 +7,16 @@ import {
 } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
 import { getTemplate, isTemplateId } from "@/lib/templates";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 
 /** GET /api/documents — list documents (newest first) */
 export async function GET() {
   try {
+    const workspaceId = await getWorkspaceId();
     const documents = await prisma.document.findMany({
+      where: { workspaceId },
       orderBy: { updatedAt: "desc" },
       select: {
         id: true,
@@ -73,8 +76,11 @@ export async function POST(request: Request) {
       : defaultNewDocumentContent();
 
   try {
+    const workspaceId = await getWorkspaceId();
+
     const document = await prisma.document.create({
       data: {
+        workspaceId,
         title,
         content: content as Prisma.InputJsonValue,
       },

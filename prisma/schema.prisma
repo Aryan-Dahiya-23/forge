@@ -11,13 +11,24 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Workspace {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  documents Document[]
+}
+
 model Document {
-  id        String    @id @default(cuid())
-  title     String
-  content   Json
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  versions  Version[]
+  id          String    @id @default(cuid())
+  workspaceId String
+  title       String
+  content     Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  versions    Version[]
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
 }
 
 model Version {

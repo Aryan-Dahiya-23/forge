@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { toDocumentDTO } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
 import { toVersionDTO } from "@/lib/versions";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 
@@ -28,8 +29,9 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   try {
+    const workspaceId = await getWorkspaceId();
     const document = await prisma.document.findUnique({
-      where: { id: documentId },
+      where: { id: documentId, workspaceId },
     });
     if (!document) {
       return Response.json({ error: "Document not found." }, { status: 404 });

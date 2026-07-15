@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { isJsonContent, toDocumentDTO } from "@/lib/documents";
 import { prisma } from "@/lib/prisma";
 import { toVersionDTO, toVersionListItem } from "@/lib/versions";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 
@@ -14,8 +15,9 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id: documentId } = await context.params;
 
   try {
+    const workspaceId = await getWorkspaceId();
     const document = await prisma.document.findUnique({
-      where: { id: documentId },
+      where: { id: documentId, workspaceId },
       select: { id: true },
     });
     if (!document) {
@@ -62,8 +64,9 @@ export async function POST(request: Request, context: RouteContext) {
       : {};
 
   try {
+    const workspaceId = await getWorkspaceId();
     const existing = await prisma.document.findUnique({
-      where: { id: documentId },
+      where: { id: documentId, workspaceId },
     });
     if (!existing) {
       return Response.json({ error: "Document not found." }, { status: 404 });

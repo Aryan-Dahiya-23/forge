@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { toVersionDTO } from "@/lib/versions";
+import { getWorkspaceId } from "@/lib/workspace";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,17 @@ export async function GET(_request: Request, context: RouteContext) {
   const { id: documentId, versionId } = await context.params;
 
   try {
-    const version = await prisma.version.findFirst({
+    const workspaceId = await getWorkspaceId();
+    // Verify document belongs to workspace
+    const doc = await prisma.document.findUnique({
+      where: { id: documentId, workspaceId },
+      select: { id: true },
+    });
+    if (!doc) {
+      return Response.json({ error: "Document not found." }, { status: 404 });
+    }
+
+    const version = await prisma.version.findUnique({
       where: { id: versionId, documentId },
     });
     if (!version) {
