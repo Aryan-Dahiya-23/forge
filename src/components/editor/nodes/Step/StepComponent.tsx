@@ -85,6 +85,8 @@ export function StepComponent({
             className={cn(
               "w-10 rounded-md border border-transparent bg-transparent px-1 py-0.5 text-center text-[11px] tabular-nums text-muted-foreground",
               "opacity-0 transition-opacity duration-150 group-hover/step:opacity-100 focus:opacity-100",
+              // Always visible on touch devices (no hover capability)
+              "touch:opacity-100",
               "hover:border-border hover:bg-muted/50",
               "focus-visible:border-border focus-visible:bg-muted/50 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
             )}

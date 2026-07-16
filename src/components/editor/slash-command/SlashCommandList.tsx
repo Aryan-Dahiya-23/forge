@@ -74,7 +74,7 @@ export const SlashCommandList = forwardRef<
 
   if (items.length === 0) {
     return (
-      <div className="w-72 rounded-xl border border-border/80 bg-popover px-3 py-6 text-center text-sm text-muted-foreground shadow-lg">
+      <div className="w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border/80 bg-popover px-3 py-6 text-center text-sm text-muted-foreground shadow-lg">
         No matching commands
       </div>
     );
@@ -85,7 +85,7 @@ export const SlashCommandList = forwardRef<
   return (
     <div
       ref={listRef}
-      className="z-50 max-h-80 w-72 overflow-y-auto rounded-xl border border-border/80 bg-popover p-1 text-popover-foreground shadow-lg"
+      className="z-50 max-h-80 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border/80 bg-popover p-1 text-popover-foreground shadow-lg"
       role="listbox"
       aria-label="Insert block"
       id="slash-command-list"

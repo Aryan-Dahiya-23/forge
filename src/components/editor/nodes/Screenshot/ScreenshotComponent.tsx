@@ -204,7 +204,7 @@ export function ScreenshotComponent({
                 "absolute top-2 right-2 flex items-center gap-0.5 rounded-md border border-border/50 bg-background/90 p-0.5 shadow-sm backdrop-blur-sm transition-opacity duration-150",
                 selected || dragging
                   ? "opacity-100"
-                  : "opacity-0 group-hover/screenshot:opacity-100 focus-within:opacity-100",
+                  : "opacity-0 group-hover/screenshot:opacity-100 focus-within:opacity-100 touch:opacity-100",
               )}
             >
               <Button

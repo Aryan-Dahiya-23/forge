@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* Targets devices where hover is not the primary input (touch screens) */
+@custom-variant touch (@media (hover: none));
 
 @theme inline {
   --color-background: var(--background);
