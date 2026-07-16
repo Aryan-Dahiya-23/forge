@@ -2,8 +2,16 @@
 
 import type { NodeViewProps } from "@tiptap/react";
 import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
-import { GripVertical } from "lucide-react";
+import { ChevronDown, GripVertical } from "lucide-react";
 import type { CalloutVariant } from "./callout-extension";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 const VARIANT_STYLES: Record<
@@ -80,24 +88,53 @@ export function CalloutComponent({
             {styles.label}
           </span>
         </div>
-        <select
-          value={variant}
-          onChange={(event) =>
-            updateAttributes({ variant: event.target.value as CalloutVariant })
-          }
-          className={cn(
-            "rounded-md border border-transparent bg-background/60 px-2 py-1 text-xs text-foreground/80",
-            "opacity-70 transition-opacity hover:opacity-100",
-            "focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-          )}
-          aria-label="Callout type"
-        >
-          {VARIANTS.map((option) => (
-            <option key={option} value={option}>
-              {option.charAt(0).toUpperCase() + option.slice(1)}
-            </option>
-          ))}
-        </select>
+        {/*
+          Portaled dropdown instead of native <select>.
+          Native select pickers mis-position on mobile when nested inside
+          TipTap node views + overflow scroll containers.
+        */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="Callout type"
+                className={cn(
+                  // Larger touch target on mobile; compact on desktop
+                  "h-9 gap-1 px-2.5 text-xs text-foreground/80 md:h-7 md:px-2",
+                  "border border-transparent bg-background/60 opacity-70",
+                  "hover:opacity-100 hover:bg-background/80",
+                  "focus-visible:opacity-100",
+                )}
+              />
+            }
+          >
+            {styles.label}
+            <ChevronDown className="size-3.5 opacity-70" strokeWidth={2} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="bottom" sideOffset={4} className="min-w-32">
+            <DropdownMenuRadioGroup
+              value={variant}
+              onValueChange={(value) =>
+                updateAttributes({ variant: value as CalloutVariant })
+              }
+            >
+              {VARIANTS.map((option) => (
+                <DropdownMenuRadioItem
+                  key={option}
+                  value={option}
+                  // Base UI RadioItem defaults closeOnClick=false; we want select → dismiss
+                  closeOnClick
+                  className="min-h-10 md:min-h-0"
+                >
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <NodeViewContent className="callout-content text-sm leading-relaxed text-foreground/90" />
     </NodeViewWrapper>

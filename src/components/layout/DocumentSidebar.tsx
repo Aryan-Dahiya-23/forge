@@ -20,16 +20,28 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 type DocumentSidebarProps = {
   documents: DocumentListItem[];
+  /** Mobile-only: controls whether the sheet is open */
+  mobileOpen?: boolean;
+  /** Mobile-only: called when the sheet requests close */
+  onMobileClose?: () => void;
 };
 
 /**
  * Slim navigation rail — library only, not a dashboard.
+ *
+ * Desktop (md+): rendered as a permanent aside inside AppShell's flex row.
+ * Mobile (<md):  rendered inside a slide-over Sheet controlled by AppShell.
  */
-export function DocumentSidebar({ documents }: DocumentSidebarProps) {
+export function DocumentSidebar({
+  documents,
+  mobileOpen = false,
+  onMobileClose,
+}: DocumentSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useParams();
@@ -80,144 +92,187 @@ export function DocumentSidebar({ documents }: DocumentSidebarProps) {
 
   const isCreateView = pathname === "/documents" || pathname === "/documents/";
 
-  return (
+  /** Closes the mobile sheet after navigating to a document */
+  const handleDocLinkClick = useCallback(() => {
+    onMobileClose?.();
+  }, [onMobileClose]);
+
+  // ── Sidebar inner content (shared between desktop aside and mobile sheet) ──
+  const sidebarContent = (
     <>
-      <aside
-        className="flex h-svh w-56 shrink-0 flex-col border-r border-border/45 bg-muted/10"
-        aria-label="Documents"
-      >
-        <div className="flex h-12 items-center justify-between gap-1 px-4 border-b border-border/15">
-          <Link
-            href="/documents"
-            className={cn(
-              "truncate text-sm font-semibold tracking-tight text-foreground",
-              "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
-            )}
+      <div className="flex h-12 items-center justify-between gap-1 px-4 border-b border-border/15">
+        <Link
+          href="/documents"
+          onClick={handleDocLinkClick}
+          className={cn(
+            "truncate text-sm font-semibold tracking-tight text-foreground",
+            "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+          )}
+        >
+          DocForge
+        </Link>
+        {!mounted ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground/50"
+            disabled
           >
-            DocForge
-          </Link>
-          {!mounted ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground/50"
-              disabled
+            <span className="size-4" />
+          </Button>
+        ) : (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={toggleTheme}
+                  aria-label="Toggle theme"
+                  className="text-muted-foreground transition-colors hover:text-foreground"
+                />
+              }
             >
-              <span className="size-4" />
-            </Button>
-          ) : (
-            <Tooltip>
-              <TooltipTrigger
-                render={
+              {resolvedTheme === "dark" ? (
+                <Sun className="size-4" strokeWidth={1.75} />
+              ) : (
+                <Moon className="size-4" strokeWidth={1.75} />
+              )}
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={4}>
+              <p className="text-xs">Toggle theme</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      <div className="px-2 py-2 border-b border-border/10">
+        <Link
+          href="/documents"
+          onClick={handleDocLinkClick}
+          className={cn(
+            "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors duration-150 border border-border/40 shadow-xs",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+            isCreateView
+              ? "bg-foreground/[0.05] text-foreground border-border/80"
+              : "bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60",
+          )}
+        >
+          <Plus className="size-3.5 shrink-0" strokeWidth={2} />
+          New document
+        </Link>
+      </div>
+
+      <p className="px-4 pt-3.5 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
+        Documents
+      </p>
+
+      <ScrollArea className="min-h-0 flex-1 px-2 pb-3">
+        {documents.length === 0 ? (
+          <p className="px-2 py-6 text-center text-xs leading-relaxed text-muted-foreground">
+            No documents yet
+          </p>
+        ) : (
+          <ul className="flex flex-col gap-0.5">
+            {documents.map((doc) => {
+              const isActive = doc.id === activeId;
+              return (
+                <li key={doc.id} className="group relative">
+                  <Link
+                    href={`/documents/${doc.id}`}
+                    onClick={handleDocLinkClick}
+                    className={cn(
+                      "flex flex-col gap-0 rounded-md py-1.5 pr-7 pl-2 border border-transparent transition-colors duration-150",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                      isActive
+                        ? "bg-foreground/[0.05] border-border/40 font-medium text-foreground"
+                        : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground",
+                    )}
+                  >
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <FileText
+                        className={cn(
+                          "size-3.5 shrink-0",
+                          isActive
+                            ? "text-foreground/70"
+                            : "text-muted-foreground/70",
+                        )}
+                        strokeWidth={1.75}
+                      />
+                      <span
+                        className={cn(
+                          "min-w-0 flex-1 truncate text-[13px] leading-snug",
+                          isActive && "font-medium",
+                        )}
+                      >
+                        {doc.title || "Untitled"}
+                      </span>
+                    </span>
+                    <span className="truncate pl-5 text-[10px] tabular-nums text-muted-foreground/70">
+                      {formatRelative(doc.updatedAt)}
+                    </span>
+                  </Link>
+                  {/*
+                   * Delete button:
+                   * Desktop: hover-reveal via group-hover
+                   * Touch devices: always visible via @media(hover:none)
+                   * We achieve this by combining Tailwind's group-hover with
+                   * a CSS class that forces opacity-100 when hover is unavailable.
+                   */}
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    onClick={toggleTheme}
-                    aria-label="Toggle theme"
-                    className="text-muted-foreground transition-colors hover:text-foreground"
-                  />
-                }
-              >
-                {resolvedTheme === "dark" ? (
-                  <Sun className="size-4" strokeWidth={1.75} />
-                ) : (
-                  <Moon className="size-4" strokeWidth={1.75} />
-                )}
-              </TooltipTrigger>
-              <TooltipContent side="bottom" sideOffset={4}>
-                <p className="text-xs">Toggle theme</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+                    className={cn(
+                      "absolute right-1.5 top-0 bottom-0 my-auto text-muted-foreground hover:text-destructive",
+                      "opacity-0 transition-opacity duration-150",
+                      "group-hover:opacity-100 group-focus-visible:opacity-100 focus-visible:opacity-100",
+                      // Always show on touch devices (no hover capability)
+                      "touch:opacity-100",
+                    )}
+                    aria-label={`Delete ${doc.title}`}
+                    onClick={() => setDeleteTarget(doc)}
+                  >
+                    <Trash2 className="size-3.5" strokeWidth={1.75} />
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </ScrollArea>
+    </>
+  );
 
-        <div className="px-2 py-2 border-b border-border/10">
-          <Link
-            href="/documents"
-            className={cn(
-              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors duration-150 border border-border/40 shadow-xs",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
-              isCreateView
-                ? "bg-foreground/[0.05] text-foreground border-border/80"
-                : "bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60",
-            )}
-          >
-            <Plus className="size-3.5 shrink-0" strokeWidth={2} />
-            New document
-          </Link>
-        </div>
-
-        <p className="px-4 pt-3.5 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80">
-          Documents
-        </p>
-
-        <ScrollArea className="min-h-0 flex-1 px-2 pb-3">
-          {documents.length === 0 ? (
-            <p className="px-2 py-6 text-center text-xs leading-relaxed text-muted-foreground">
-              No documents yet
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-0.5">
-              {documents.map((doc) => {
-                const isActive = doc.id === activeId;
-                return (
-                  <li key={doc.id} className="group relative">
-                    <Link
-                      href={`/documents/${doc.id}`}
-                      className={cn(
-                        "flex flex-col gap-0 rounded-md py-1.5 pr-7 pl-2 border border-transparent transition-colors duration-150",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
-                        isActive
-                          ? "bg-foreground/[0.05] border-border/40 font-medium text-foreground"
-                          : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground",
-                      )}
-                    >
-                      <span className="flex min-w-0 items-center gap-1.5">
-                        <FileText
-                          className={cn(
-                            "size-3.5 shrink-0",
-                            isActive
-                              ? "text-foreground/70"
-                              : "text-muted-foreground/70",
-                          )}
-                          strokeWidth={1.75}
-                        />
-                        <span
-                          className={cn(
-                            "min-w-0 flex-1 truncate text-[13px] leading-snug",
-                            isActive && "font-medium",
-                          )}
-                        >
-                          {doc.title || "Untitled"}
-                        </span>
-                      </span>
-                      <span className="truncate pl-5 text-[10px] tabular-nums text-muted-foreground/70">
-                        {formatRelative(doc.updatedAt)}
-                      </span>
-                    </Link>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className={cn(
-                        "absolute right-1.5 top-0 bottom-0 my-auto text-muted-foreground hover:text-destructive",
-                        "opacity-0 transition-opacity duration-150",
-                        "group-hover:opacity-100 group-focus-visible:opacity-100 focus-visible:opacity-100",
-                      )}
-                      aria-label={`Delete ${doc.title}`}
-                      onClick={() => setDeleteTarget(doc)}
-                    >
-                      <Trash2 className="size-3.5" strokeWidth={1.75} />
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </ScrollArea>
+  return (
+    <>
+      {/* ── Desktop: permanent aside (hidden below md) ── */}
+      <aside
+        className="hidden md:flex h-svh w-56 shrink-0 flex-col border-r border-border/45 bg-muted/10"
+        aria-label="Documents"
+      >
+        {sidebarContent}
       </aside>
+
+      {/* ── Mobile: slide-over Sheet (left) ── */}
+      <Sheet
+        open={mobileOpen}
+        onOpenChange={(open) => {
+          if (!open) onMobileClose?.();
+        }}
+      >
+        <SheetContent
+          side="left"
+          showCloseButton={false}
+          // Solid bg required — bg-muted/10 is translucent when portaled over content
+          className="w-56 max-w-[14rem] gap-0 border-border/45 bg-background p-0 sm:max-w-[14rem]"
+        >
+          <SheetTitle className="sr-only">Documents</SheetTitle>
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog
         open={deleteTarget !== null}
@@ -230,7 +285,7 @@ export function DocumentSidebar({ documents }: DocumentSidebarProps) {
             <AlertDialogTitle>Delete document?</AlertDialogTitle>
             <AlertDialogDescription>
               {deleteTarget
-                ? `“${deleteTarget.title || "Untitled"}” will be permanently deleted.`
+                ? `"${deleteTarget.title || "Untitled"}" will be permanently deleted.`
                 : null}
             </AlertDialogDescription>
           </AlertDialogHeader>

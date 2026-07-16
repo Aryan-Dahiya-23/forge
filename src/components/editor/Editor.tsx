@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   Tooltip,
   TooltipContent,
@@ -76,6 +77,16 @@ export function Editor({
       editor.off("transaction", onTx);
     };
   }, [editor]);
+
+  // Sheet portals to body — only open version history sheet below md
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)");
+    const onChange = () => setIsMobileViewport(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
 
   const getContent = useCallback((): JSONContent => {
     return editor?.getJSON() ?? initialContent;
@@ -169,7 +180,7 @@ export function Editor({
           </header>
 
           <div
-            className="mb-4 mt-2 flex items-center gap-0.5 rounded-lg border border-border/35 bg-muted/5 p-1"
+            className="mb-4 mt-2 flex flex-wrap items-center gap-0.5 rounded-lg border border-border/35 bg-muted/5 p-1"
             role="toolbar"
             aria-label="Text formatting"
           >
@@ -219,9 +230,10 @@ export function Editor({
         </div>
       </div>
 
+      {/* ── Desktop: inline version history panel (hidden below md) ── */}
       {historyOpen && (
         <aside
-          className="flex w-64 shrink-0 flex-col border-l border-border/50 bg-muted/10"
+          className="hidden md:flex w-64 shrink-0 flex-col border-l border-border/50 bg-muted/10"
           aria-label="Version history"
         >
           <div className="flex h-11 items-center px-4">
@@ -238,6 +250,34 @@ export function Editor({
           </div>
         </aside>
       )}
+
+      {/* ── Mobile: version history as a right Sheet ── */}
+      <Sheet
+        open={historyOpen && isMobileViewport}
+        onOpenChange={setHistoryOpen}
+      >
+        <SheetContent
+          side="right"
+          showCloseButton={false}
+          // Solid bg required — bg-muted/10 is translucent when portaled over content
+          className="w-64 max-w-[16rem] gap-0 border-border/50 bg-background p-0 sm:max-w-[16rem]"
+        >
+          <div className="flex h-11 items-center border-b border-border/15 px-4">
+            <SheetTitle className="text-sm font-medium text-foreground">
+              History
+            </SheetTitle>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
+            <VersionHistory
+              documentId={documentId}
+              getContent={getContent}
+              onBeforeSnapshot={saveNow}
+              onRestore={handleRestore}
+              embedded
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
@@ -265,7 +305,8 @@ function ToolbarIcon({
             aria-label={label}
             aria-pressed={active}
             className={cn(
-              "size-8 text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground",
+              // 44px touch target on mobile; visual size-8 on desktop
+              "size-8 min-h-11 min-w-11 md:min-h-8 md:min-w-8 text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground",
               "focus-visible:ring-2 focus-visible:ring-ring/30",
               active && "bg-muted text-foreground",
             )}
