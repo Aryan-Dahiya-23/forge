@@ -125,6 +125,8 @@ export function CalloutComponent({
                 <DropdownMenuRadioItem
                   key={option}
                   value={option}
+                  // Base UI RadioItem defaults closeOnClick=false; we want select → dismiss
+                  closeOnClick
                   className="min-h-10 md:min-h-0"
                 >
                   {option.charAt(0).toUpperCase() + option.slice(1)}
