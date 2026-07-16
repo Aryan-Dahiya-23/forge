@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Sheet,
-  SheetContent,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerBackdrop,
+  DrawerPopup,
+  DrawerPortal,
+} from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 
 type DocumentSidebarProps = {
@@ -259,23 +261,24 @@ export function DocumentSidebar({
         {sidebarContent}
       </aside>
 
-      {/* ── Mobile: slide-over Sheet (hidden on md+) ── */}
+      {/* ── Mobile: slide-over Drawer (hidden on md+) ── */}
       <div className="md:hidden">
-        <Sheet
+        <Drawer
           open={mobileOpen}
           onOpenChange={(open) => {
             if (!open) onMobileClose?.();
           }}
         >
-          <SheetContent
-            side="left"
-            showCloseButton={false}
-            aria-label="Documents"
-            className="w-56 max-w-[14rem] gap-0 border-r border-border/45 bg-muted/10 p-0"
-          >
-            {sidebarContent}
-          </SheetContent>
-        </Sheet>
+          <DrawerPortal>
+            <DrawerBackdrop />
+            <DrawerPopup
+              aria-label="Documents"
+              className="flex flex-col bg-muted/10"
+            >
+              {sidebarContent}
+            </DrawerPopup>
+          </DrawerPortal>
+        </Drawer>
       </div>
 
       <AlertDialog
