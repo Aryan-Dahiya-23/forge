@@ -20,12 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  Drawer,
-  DrawerBackdrop,
-  DrawerPopup,
-  DrawerPortal,
-} from "@/components/ui/drawer";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 type DocumentSidebarProps = {
@@ -261,25 +256,23 @@ export function DocumentSidebar({
         {sidebarContent}
       </aside>
 
-      {/* ── Mobile: slide-over Drawer (hidden on md+) ── */}
-      <div className="md:hidden">
-        <Drawer
-          open={mobileOpen}
-          onOpenChange={(open) => {
-            if (!open) onMobileClose?.();
-          }}
+      {/* ── Mobile: slide-over Sheet (left) ── */}
+      <Sheet
+        open={mobileOpen}
+        onOpenChange={(open) => {
+          if (!open) onMobileClose?.();
+        }}
+      >
+        <SheetContent
+          side="left"
+          showCloseButton={false}
+          // Solid bg required — bg-muted/10 is translucent when portaled over content
+          className="w-56 max-w-[14rem] gap-0 border-border/45 bg-background p-0 sm:max-w-[14rem]"
         >
-          <DrawerPortal>
-            <DrawerBackdrop />
-            <DrawerPopup
-              aria-label="Documents"
-              className="flex flex-col bg-muted/10"
-            >
-              {sidebarContent}
-            </DrawerPopup>
-          </DrawerPortal>
-        </Drawer>
-      </div>
+          <SheetTitle className="sr-only">Documents</SheetTitle>
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog
         open={deleteTarget !== null}
